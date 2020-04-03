@@ -1,0 +1,1 @@
+include ':app', ':instant-run:fix-patch', ':instant-run:fix-plugin',':multidex:fix-patch', ':multidex:fix-plugin', ':multidex:fix-hack'

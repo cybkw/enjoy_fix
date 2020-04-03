@@ -1,0 +1,40 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+def jarTask = tasks.getByName("jar")
+def jarFile = jarTask.outputs.files.singleFile
+
+task dx << {
+    def dxJar = file("../fix-plugin/src/main/resources/libs/dx.jar").absolutePath
+    //获得patch中的assests目录
+    def outDir = file("../fix-patch/src/main/assets")
+    outDir.mkdirs()
+    outDir = outDir.absolutePath
+
+    def cmd = "java -jar $dxJar --dex --output=$outDir/hack.dex ${jarFile.absolutePath}"
+    def process = cmd.execute()
+    process.waitFor()
+    if (process.exitValue() != 0) {
+        throw new Exception("$cmd")
+    }
+
+
+    def hack = file("../fix-plugin/src/main/resources/libs/hack.jar")
+    hack.parentFile.mkdirs()
+    def bytes = jarFile.readBytes();
+    hack.withOutputStream{
+        it.write(bytes)
+    }
+}
+
+
+dx.dependsOn jarTask
+
+tasks.getByName("assemble").dependsOn dx
+
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
